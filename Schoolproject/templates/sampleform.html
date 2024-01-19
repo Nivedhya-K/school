@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dependent Dropdown</title>
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+
+  <form id="myForm">
+    {% csrf_token %}
+    <label for="department">Department:</label>
+    <select id="department" name="department">
+        <option value="" selected disabled>Select Department</option>
+        {% for department in departments %}
+            <option value="{{ department.id }}">{{ department.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="course">Course:</label>
+    <select id="course" name="course" disabled>
+        <option value="" >Select Course</option>
+    </select>
+  </form>
+
+ <script>
+    $(document).ready(function () {
+        var coursesSelect = $('#course');  // Move this outside the change event handler
+
+        $('#department').change(function () {
+            var departmentId = $(this).val();
+            if (departmentId) {
+                $.ajax({
+                    type: "GET",
+                    url: "/get_courses",
+                    data: {'department_id': departmentId},
+                    success: function (data) {
+                        var defaultOption = '<option value="">Select Course</option>';
+                        coursesSelect.html(defaultOption + data.map(function (value) {
+                            return '<option value="' + value.id + '">' + value.name + '</option>';
+                        }).join(''));
+                        coursesSelect.prop("disabled", false);
+                    }
+                });
+            } else {
+                var defaultOption = '<option value="">Select Course</option>';
+                coursesSelect.html(defaultOption);
+                coursesSelect.prop("disabled", true);
+            }
+        });
+    });
+</script>
+
+
+</body>
+</html>
